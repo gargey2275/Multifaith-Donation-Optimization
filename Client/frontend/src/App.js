@@ -24,7 +24,7 @@ const AuthProvider = ({ children }) => {
 
     const login = async (phoneNumber, password) => {
         try {
-            const response = await axios.post('/api/users/login', { phoneNumber, password });
+            const response = await axios.post('/api', { phoneNumber, password });
             if (response.data) {
                 localStorage.setItem('token', response.data.token);
                 localStorage.setItem('user', JSON.stringify(response.data.user));
@@ -40,7 +40,7 @@ const AuthProvider = ({ children }) => {
     
     const register = async (name, phoneNumber, password) => {
         try {
-            const response = await axios.post('/api/users/register', { name, phoneNumber, password });
+            const response = await axios.post('/api', { name, phoneNumber, password });
             if (response.data) {
                 return await login(phoneNumber, password);
             }
@@ -117,7 +117,7 @@ function CauseDetailsPage() {
     useEffect(() => {
         const fetchAllData = async () => {
             try {
-                const response = await axios.get('/api/religions');
+                const response = await axios.get('/api');
                 const allCauses = response.data.flatMap(r => r.causes);
                 const foundCause = allCauses.find(c => c.id === causeId);
                 if (foundCause) {
@@ -164,7 +164,7 @@ function HomePage() {
     useEffect(() => {
         const fetchReligions = async () => {
             try {
-                const response = await axios.get('/api/religions');
+                const response = await axios.get('/api');
                 setReligions(response.data);
             } catch (error) {
                 console.error("Error fetching religion data:", error);
@@ -363,7 +363,7 @@ function PaymentPage() {
             };
 
             const response = await axios.post(
-                '/api/donate',
+                '/api',
                 { amount: donationAmount }, // The data we are sending
                 config // The configuration with our auth header
             );
