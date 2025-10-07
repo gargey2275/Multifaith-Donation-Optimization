@@ -2,11 +2,11 @@
   "version": 2,
   "builds": [
     {
-      "src": "Server/Back End/index.js",
+      "src": "Server/backend/index.js",
       "use": "@vercel/node"
     },
     {
-      "src": "Client/Front End/package.json",
+      "src": "Client/frontend/package.json",
       "use": "@vercel/static-build",
       "config": { "installCommand": "npm install", "buildCommand": "npm run build" }
     }
@@ -14,11 +14,11 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "Server/Back End/index.js"
+      "dest": "Server/backend/index.js"
     },
     {
       "src": "/(.*)",
-      "dest": "Client/Front End/build/$1"
+      "dest": "Client/frontend/build/$1"
     }
   ]
 }
