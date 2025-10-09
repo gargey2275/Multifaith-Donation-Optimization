@@ -24,7 +24,8 @@ const AuthProvider = ({ children }) => {
 
     const login = async (phoneNumber, password) => {
         try {
-            const response = await axios.post('/api', { phoneNumber, password });
+            // CORRECTED PATH
+            const response = await axios.post('/api/users/login', { phoneNumber, password });
             if (response.data) {
                 localStorage.setItem('token', response.data.token);
                 localStorage.setItem('user', JSON.stringify(response.data.user));
@@ -40,7 +41,8 @@ const AuthProvider = ({ children }) => {
     
     const register = async (name, phoneNumber, password) => {
         try {
-            const response = await axios.post('/api', { name, phoneNumber, password });
+            // CORRECTED PATH
+            const response = await axios.post('/api/users/register', { name, phoneNumber, password });
             if (response.data) {
                 return await login(phoneNumber, password);
             }
@@ -72,12 +74,10 @@ const useAuth = () => {
 function Header() {
     const { isAuthenticated, logout, user } = useAuth();
     const navigate = useNavigate();
-
     const handleLogout = () => {
         logout();
         navigate('/');
     };
-
     return (
         <header className="header">
             <h1>MultiFaith Donation</h1>
@@ -117,7 +117,8 @@ function CauseDetailsPage() {
     useEffect(() => {
         const fetchAllData = async () => {
             try {
-                const response = await axios.get('/api');
+                // CORRECTED PATH
+                const response = await axios.get('/api/religions');
                 const allCauses = response.data.flatMap(r => r.causes);
                 const foundCause = allCauses.find(c => c.id === causeId);
                 if (foundCause) {
@@ -164,7 +165,8 @@ function HomePage() {
     useEffect(() => {
         const fetchReligions = async () => {
             try {
-                const response = await axios.get('/api');
+                // CORRECTED PATH
+                const response = await axios.get('/api/religions');
                 setReligions(response.data);
             } catch (error) {
                 console.error("Error fetching religion data:", error);
@@ -235,7 +237,6 @@ function LoginPage() {
     const [error, setError] = useState('');
     const navigate = useNavigate();
     const auth = useAuth();
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -246,32 +247,16 @@ function LoginPage() {
             setError('Invalid phone number or password.');
         }
     };
-
     return (
         <div className="login-container">
             <form className="login-form" onSubmit={handleSubmit}>
                 <h2>Login</h2>
                 {error && <p className="login-error">{error}</p>}
-                
-                <div className="form-group">
-                    <label htmlFor="phone-number">Phone Number</label>
-                    <input type="tel" id="phone-number" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} required />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="password">Password</label>
-                    <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                </div>
-
-                {/* --- NEW: Forgot Password Link --- */}
-                <div className="login-extras">
-                    <Link to="/forgot-password">Forgot Password?</Link>
-                </div>
-                
+                <div className="form-group"><label htmlFor="phone-number">Phone Number</label><input type="tel" id="phone-number" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} required /></div>
+                <div className="form-group"><label htmlFor="password">Password</label><input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></div>
+                <div className="login-extras"><Link to="/forgot-password">Forgot Password?</Link></div>
                 <button type="submit" className="login-submit-btn">Login</button>
-                
-                <div className="auth-switch">
-                    <p>Don't have an account? <Link to="/signup">Sign Up</Link></p>
-                </div>
+                <div className="auth-switch"><p>Don't have an account? <Link to="/signup">Sign Up</Link></p></div>
             </form>
         </div>
     );
@@ -336,82 +321,54 @@ function ContactPage() {
 }
 
 function PaymentPage() {
-    const { token } = useAuth(); // Get the token from our AuthContext
+    const { token } = useAuth();
     const navigate = useNavigate();
-
-    // State for the donation amount and the payment method
     const [amount, setAmount] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('upi');
 
     const handlePayment = async (e) => {
         e.preventDefault();
-        
-        // Convert amount to a number for validation
         const donationAmount = Number(amount);
         if (!donationAmount || donationAmount <= 0) {
             alert("Please enter a valid donation amount.");
             return;
         }
-
         try {
-            // --- This is the API call to our protected route ---
             const config = {
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`, // Include the token here
+                    Authorization: `Bearer ${token}`,
                 },
             };
-
-            const response = await axios.post(
-                '/api',
-                { amount: donationAmount }, // The data we are sending
-                config // The configuration with our auth header
-            );
-            
-            // On success, show the message from the server and navigate home
+            // CORRECTED PATH
+            const response = await axios.post('/api/users/donate', { amount: donationAmount }, config);
             alert(response.data.message);
             navigate('/');
-
         } catch (error) {
-            // If the token is invalid or another error occurs
             console.error('Donation error:', error.response ? error.response.data : error.message);
             alert('Donation failed. You may need to log in again.');
         }
     };
     
-    // The JSX is updated to include an input for the amount
     return (
         <div className="payment-container">
             <h2>Complete Your Donation</h2>
-            
-            {/* --- NEW: Amount Input Form --- */}
             <form onSubmit={handlePayment} className="payment-box">
                 <div className="payment-content">
                     <div className="form-group">
                         <label htmlFor="amount">Donation Amount (INR)</label>
-                        <input
-                            type="number"
-                            id="amount"
-                            value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
-                            placeholder="Enter amount"
-                            required
-                        />
+                        <input type="number" id="amount" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Enter amount" required />
                     </div>
                 </div>
-
-                {/* --- Existing Payment Tabs --- */}
                 <div className="payment-tabs">
                     <button type="button" className={`payment-tab ${paymentMethod === 'upi' ? 'active' : ''}`} onClick={() => setPaymentMethod('upi')}>UPI</button>
                     <button type="button" className={`payment-tab ${paymentMethod === 'card' ? 'active' : ''}`} onClick={() => setPaymentMethod('card')}>Card</button>
                     <button type="button" className={`payment-tab ${paymentMethod === 'netbanking' ? 'active' : ''}`} onClick={() => setPaymentMethod('netbanking')}>Net Banking</button>
                 </div>
-                
                 <div className="payment-content">
                     {paymentMethod === 'upi' && (<div><div className="form-group"><label htmlFor="upi-id">UPI ID</label><input type="text" id="upi-id" placeholder="yourname@bank" /></div></div>)}
                     {paymentMethod === 'card' && (<div><div className="form-group"><label htmlFor="card-number">Card Number</label><input type="text" id="card-number" placeholder="1234 5678 9101 1121" /></div><div className="form-row"><div className="form-group"><label htmlFor="expiry">Expiry (MM/YY)</label><input type="text" id="expiry" placeholder="08/28" /></div><div className="form-group"><label htmlFor="cvc">CVC</label><input type="text" id="cvc" placeholder="123" /></div></div><div className="form-group"><label htmlFor="card-name">Name on Card</label><input type="text" id="card-name" placeholder="Gargey Mahajan" /></div></div>)}
                     {paymentMethod === 'netbanking' && (<div><div className="form-group"><label htmlFor="bank-select">Select Your Bank</label><select id="bank-select" className="bank-select"><option value="">-- Choose a bank --</option><option value="sbi">State Bank of India</option><option value="hdfc">HDFC Bank</option></select></div></div>)}
-                    
                     <button type="submit" className="payment-submit-btn">Donate Now</button>
                 </div>
             </form>

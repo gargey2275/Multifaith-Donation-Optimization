@@ -1,3 +1,6 @@
+// Add this line to the very top
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -41,7 +44,7 @@ app.get('/', (req, res) => {
 
 // --- SERVER START ---
 
-// This is for local development (Vercel will ignore it)
+// This is for local development
 app.listen(PORT, () => {
     console.log(`Server is live and running on port ${PORT}`);
 });
