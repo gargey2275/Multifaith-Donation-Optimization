@@ -8,11 +8,30 @@ const mongoose = require("mongoose");
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Middleware
+// --- CORS FIX ---
+// List of all URLs that are allowed to make requests to your backend
+const allowedOrigins = [
+  "https://multifaith-donation-optimization.vercel.app", // Your main production URL
+  "https://multifaith-donation-op.vercel.app", // Your other Vercel URL
+  "https://multifaith-donation-op-git-bd0821-gargey-ajay-mahajans-projects.vercel.app", // The preview URL you showed me
+  // You can add 'http://localhost:3000' here if you need to test from your local computer
+];
+
 const corsOptions = {
-  origin: "https://multifaith-donation-op.vercel.app", // <-- Use your Vercel URL
+  origin: function (origin, callback) {
+    // Check if the incoming origin is in our allowed list (or if it's not a browser request, like from Postman)
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error("This URL is not allowed by CORS"));
+    }
+  },
 };
-app.use(cors(corsOptions));
+
+// Middleware
+app.use(cors(corsOptions)); // Use the new advanced CORS options
+app.use(express.json()); // This was missing, you need it to read JSON bodies
+// --- END OF FIX ---
 
 // Database Connection
 mongoose
