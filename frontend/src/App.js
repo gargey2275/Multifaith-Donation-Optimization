@@ -32,7 +32,6 @@ const AuthProvider = ({ children }) => {
   const login = async (phoneNumber, password) => {
     try {
       // CORRECTED PATH
-      // <-- FIX: Added process.env.REACT_APP_API_URL
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/users/login`,
         {
@@ -52,14 +51,22 @@ const AuthProvider = ({ children }) => {
         "Login error:",
         error.response ? error.response.data : error.message
       );
-      return false;
+      // --- FIX 1: Throw the actual error message ---
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error("Login failed. Please try again.");
+      }
     }
   };
 
   const register = async (name, phoneNumber, password) => {
     try {
       // CORRECTED PATH
-      // <-- FIX: Added process.env.REACT_APP_API_URL
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/users/register`,
         {
@@ -76,7 +83,16 @@ const AuthProvider = ({ children }) => {
         "Registration error:",
         error.response ? error.response.data : error.message
       );
-      return false;
+      // --- FIX 1 (Again): Throw the actual error message ---
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error("Registration failed. Please try again.");
+      }
     }
   };
 
@@ -160,7 +176,6 @@ function CauseDetailsPage() {
     const fetchAllData = async () => {
       try {
         // CORRECTED PATH
-        // <-- FIX: Added process.env.REACT_APP_API_URL
         const response = await axios.get(
           `${process.env.REACT_APP_API_URL}/api/religions`
         );
@@ -240,7 +255,6 @@ function HomePage() {
     const fetchReligions = async () => {
       try {
         // CORRECTED PATH
-        // <-- FIX: Added process.env.REACT_APP_API_URL
         const response = await axios.get(
           `${process.env.REACT_APP_API_URL}/api/religions`
         );
@@ -349,16 +363,21 @@ function LoginPage() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const auth = useAuth();
+
+  // --- FIX 2: Catch the specific error message ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    const success = await auth.login(phoneNumber, password);
-    if (success) {
-      navigate("/");
-    } else {
-      setError("Invalid phone number or password.");
+    try {
+      const success = await auth.login(phoneNumber, password);
+      if (success) {
+        navigate("/");
+      }
+    } catch (error) {
+      setError(error.message); // Set the specific error message from the backend
     }
   };
+
   return (
     <div className="login-container">
       <form className="login-form" onSubmit={handleSubmit}>
@@ -407,16 +426,21 @@ function SignUpPage() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const auth = useAuth();
+
+  // --- FIX 2 (Again): Catch the specific error message ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    const success = await auth.register(name, phoneNumber, password);
-    if (success) {
-      navigate("/");
-    } else {
-      setError("Registration failed. This phone number may already be in use.");
+    try {
+      const success = await auth.register(name, phoneNumber, password);
+      if (success) {
+        navigate("/");
+      }
+    } catch (error) {
+      setError(error.message); // Set the specific error message from the backend
     }
   };
+
   return (
     <div className="login-container">
       <form className="login-form" onSubmit={handleSubmit}>
@@ -531,7 +555,6 @@ function PaymentPage() {
         },
       };
       // CORRECTED PATH
-      // <-- FIX: Added process.env.REACT_APP_API_URL
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/users/donate`,
         { amount: donationAmount },
@@ -652,7 +675,6 @@ function PaymentPage() {
   );
 }
 
-//for vercel redoplyment
 // --- MAIN APP COMPONENT ---
 
 export default function App() {
