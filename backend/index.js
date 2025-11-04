@@ -9,8 +9,10 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+const corsOptions = {
+  origin: "https://multifaith-donation-op.vercel.app", // <-- Use your Vercel URL
+};
+app.use(cors(corsOptions));
 
 // Database Connection
 mongoose
