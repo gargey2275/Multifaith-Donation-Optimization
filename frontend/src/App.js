@@ -32,10 +32,14 @@ const AuthProvider = ({ children }) => {
   const login = async (phoneNumber, password) => {
     try {
       // CORRECTED PATH
-      const response = await axios.post("/api/users/login", {
-        phoneNumber,
-        password,
-      });
+      // <-- FIX: Added process.env.REACT_APP_API_URL
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/users/login`,
+        {
+          phoneNumber,
+          password,
+        }
+      );
       if (response.data) {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("user", JSON.stringify(response.data.user));
@@ -55,11 +59,15 @@ const AuthProvider = ({ children }) => {
   const register = async (name, phoneNumber, password) => {
     try {
       // CORRECTED PATH
-      const response = await axios.post("/api/users/register", {
-        name,
-        phoneNumber,
-        password,
-      });
+      // <-- FIX: Added process.env.REACT_APP_API_URL
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/users/register`,
+        {
+          name,
+          phoneNumber,
+          password,
+        }
+      );
       if (response.data) {
         return await login(phoneNumber, password);
       }
@@ -152,7 +160,10 @@ function CauseDetailsPage() {
     const fetchAllData = async () => {
       try {
         // CORRECTED PATH
-        const response = await axios.get("/api/religions");
+        // <-- FIX: Added process.env.REACT_APP_API_URL
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/religions`
+        );
         const allCauses = response.data.flatMap((r) => r.causes);
         const foundCause = allCauses.find((c) => c.id === causeId);
         if (foundCause) {
@@ -229,7 +240,10 @@ function HomePage() {
     const fetchReligions = async () => {
       try {
         // CORRECTED PATH
-        const response = await axios.get("/api/religions");
+        // <-- FIX: Added process.env.REACT_APP_API_URL
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/religions`
+        );
         setReligions(response.data);
       } catch (error) {
         console.error("Error fetching religion data:", error);
@@ -517,8 +531,9 @@ function PaymentPage() {
         },
       };
       // CORRECTED PATH
+      // <-- FIX: Added process.env.REACT_APP_API_URL
       const response = await axios.post(
-        "/api/users/donate",
+        `${process.env.REACT_APP_API_URL}/api/users/donate`,
         { amount: donationAmount },
         config
       );
