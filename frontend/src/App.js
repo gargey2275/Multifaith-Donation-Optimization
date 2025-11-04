@@ -652,6 +652,7 @@ function PaymentPage() {
   );
 }
 
+//for vercel redoplyment
 // --- MAIN APP COMPONENT ---
 
 export default function App() {
