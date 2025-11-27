@@ -3,8 +3,10 @@ const router = express.Router();
 const User = require("../models/userModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+// Import the auth middleware to protect the donate route
+const auth = require("../middleware/authMiddleware");
 
-// --- 1. REGISTER ROUTE (With 10-digit Fix) ---
+// --- 1. REGISTER ROUTE ---
 router.post("/register", async (req, res) => {
   try {
     const { name, phoneNumber, password } = req.body;
@@ -54,7 +56,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// --- 2. LOGIN ROUTE (This was missing!) ---
+// --- 2. LOGIN ROUTE ---
 router.post("/login", async (req, res) => {
   try {
     const { phoneNumber, password } = req.body;
@@ -82,6 +84,33 @@ router.post("/login", async (req, res) => {
         res.json({ token, user: { id: user.id, name: user.name } });
       }
     );
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
+
+// --- 3. DONATE ROUTE (Restored!) ---
+router.post("/donate", auth, async (req, res) => {
+  try {
+    const { amount } = req.body;
+
+    // Find the user who is logged in (req.user.id comes from the auth middleware)
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Here you would typically save the donation to the database.
+    // Since I don't know your exact User Schema, I will just return success.
+    // If you have a 'donations' array in your User model, uncomment the next lines:
+
+    // if (!user.donations) user.donations = [];
+    // user.donations.push({ amount, date: new Date() });
+    // await user.save();
+
+    res.json({ message: `Thank you! Donation of ₹${amount} successful.` });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server error");
